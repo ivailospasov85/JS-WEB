@@ -1,5 +1,6 @@
 const http = require('http');
-const fs = require('fs')
+const fs = require('fs');
+const querystring = require('querystring')
 
 const cats = [
     {
@@ -27,28 +28,75 @@ const cats = [
 
 const server = http.createServer((req, res) => {
     if (req.url === '/') {
-        fs.readFile('./views/')
-        res.writeHead(200, {
-            'content-type': 'text/html'
-        });
+        render('./views/partials/cat.html', cats[0], (err, catResult) => {
+            if (err) {
+                res.statusCode = 404
+                return res.end()
+            }
 
-        res.write(homeTemplate(cats));
-        res.end();
+            render('views/home.html', { cats: catResult }, (err, result) => {
+                res.writeHead(200, {
+                    'content-type': 'text/html'
+                });
+
+                res.write(result)
+                res.end();
+            })
+        })
+
+        // fs.readFile('./views/home.html', { encoding: 'utf-8' }, (err, result) => {
+        //     if (err) {
+        //         res.statusCode = 404
+        //         return res.end()
+        //     }
+        //     
+
+        //     res.write(result)
+        //     res.end();
+        // })
+
     } else if (req.url === '/styles/site.css') {
-        res.writeHead(200, {
-            'content-type': 'text/css'
-        });
+        fs.readFile('views/site.css', { encoding: 'utf-8' }, (err, result) => {
+            if (err) {
+                res.statusCode = 404
+                return res.end()
+            }
+            res.writeHead(200, {
+                'content-type': 'text/css'
+            });
 
-        res.write(siteCss);
-        res.end();
-    } else if (req.url === '/cats/add-cat') {
-        res.writeHead(200, {
-            'content-type': 'text/html'
-        });
+            res.write(result)
+            res.end();
+        })
+    } else if (req.url === '/cats/add-cat' && req.method === 'GET') {
+        fs.readFile('./views/addCat.html', { encoding: 'utf-8' }, (err, result) => {
+            if (err) {
+                res.statusCode = 404
+                return res.end()
+            }
+            res.writeHead(200, {
+                'content-type': 'text/html'
+            })
+            res.write(result)
+            res.end();
 
-        res.write(addCatTemplate);
-        res.end();
-    } else {
+        })
+
+    } else if (req.url === '/cats/add-cat' && req.method === 'POST') {
+        let body = ''
+
+        req.on('data', (chunk) => {
+            body += chunk;
+        })
+
+        req.on('close', () => {
+            const parsedBody = querystring.parse(body)
+            console.log(parsedBody);
+            res.end()
+
+        })
+    }
+    else {
         res.writeHead(200, {
             'content-type': 'text/html'
         });
@@ -57,6 +105,24 @@ const server = http.createServer((req, res) => {
         res.end();
     }
 });
+
+function render(view, data, callback) {
+    fs.readFile(view, 'utf-8', (err, result) => {
+        if (err) {
+            return callback(err)
+        }
+
+        const htmlResult = Object.keys(data).reduce((acc, key) => {
+            const pattern = new RegExp(`{{${key}}}`, 'g')
+
+            return acc.replace(pattern, data[key])
+        }, result)
+
+        callback(null, htmlResult)
+    })
+
+}
+
 
 server.listen(5000);
 console.log('Server is listening on port 5000...');
