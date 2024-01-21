@@ -1,7 +1,5 @@
 const http = require('http');
-const homeTemplate = require('./views/home.html');
-const addCatTemplate = require('./views/addCat.html');
-const siteCss = require('./views/site.css');
+const fs = require('fs')
 
 const cats = [
     {
@@ -29,10 +27,11 @@ const cats = [
 
 const server = http.createServer((req, res) => {
     if (req.url === '/') {
+        fs.readFile('./views/')
         res.writeHead(200, {
             'content-type': 'text/html'
         });
-    
+
         res.write(homeTemplate(cats));
         res.end();
     } else if (req.url === '/styles/site.css') {
@@ -46,14 +45,14 @@ const server = http.createServer((req, res) => {
         res.writeHead(200, {
             'content-type': 'text/html'
         });
-    
+
         res.write(addCatTemplate);
         res.end();
     } else {
         res.writeHead(200, {
             'content-type': 'text/html'
         });
-    
+
         res.write('<h1>404</h1>');
         res.end();
     }
