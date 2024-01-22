@@ -28,13 +28,13 @@ const cats = [
 
 const server = http.createServer((req, res) => {
     if (req.url === '/') {
-        render('./views/partials/cat.html', cats[0], (err, catResult) => {
+        render('./views/partials/cat.html', cats, (err, catResult) => {
             if (err) {
                 res.statusCode = 404
                 return res.end()
             }
 
-            render('views/home.html', { cats: catResult }, (err, result) => {
+            render('views/home.html', [{ cats: catResult }], (err, result) => {
                 res.writeHead(200, {
                     'content-type': 'text/html'
                 });
@@ -91,7 +91,13 @@ const server = http.createServer((req, res) => {
 
         req.on('close', () => {
             const parsedBody = querystring.parse(body)
-            console.log(parsedBody);
+            parsedBody.id = cats[cats.length - 1].id + 1
+
+            cats.push(parsedBody)
+
+            res.writeHead(302, {
+                'location': '/'
+            })
             res.end()
 
         })
@@ -106,17 +112,19 @@ const server = http.createServer((req, res) => {
     }
 });
 
-function render(view, data, callback) {
+function render(view, dataArr, callback) {
     fs.readFile(view, 'utf-8', (err, result) => {
         if (err) {
             return callback(err)
         }
 
-        const htmlResult = Object.keys(data).reduce((acc, key) => {
-            const pattern = new RegExp(`{{${key}}}`, 'g')
+        const htmlResult = dataArr.map(data => {
+            return Object.keys(data).reduce((acc, key) => {
+                const pattern = new RegExp(`{{${key}}}`, 'g')
 
-            return acc.replace(pattern, data[key])
-        }, result)
+                return acc.replace(pattern, data[key])
+            }, result)
+        }).join('\n')
 
         callback(null, htmlResult)
     })
