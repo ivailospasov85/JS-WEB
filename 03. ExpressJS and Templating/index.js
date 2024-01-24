@@ -3,6 +3,25 @@ const path = require('path')
 
 const app = express()
 
+app.use((req, res, next) => {
+    console.log('Request ULR:' + req.url);
+
+    if (Math.random() < 0.5) {
+        return res.send('You don`t have luck :)');
+    }
+
+    next()
+})
+// (req, res) => {
+
+//     // res.redirect('/cats')
+//     // res.send('New cat created')
+//
+
+app.get('/style/site.css', (req, res) => {
+    res.sendFile('/style/site.css')
+})
+
 app.get('/', (req, res) => {
     res.header({
         'content-type': 'text/plain'
@@ -35,19 +54,6 @@ app.get('/test', (req, res) => {
     res.end()
 })
 
-app.post('/cats', (req, res, next) => {
-    console.log('Creating new cat!');
-
-    if (Math.random() < 0.5) {
-        return res.send('You don`t have luck :)');
-    }
-
-    next()
-}, (req, res) => {
-
-    res.redirect('/cats')
-    // res.send('New cat created')
-})
 
 
 app.all('/dogs', (req, res) => {
