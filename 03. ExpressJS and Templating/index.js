@@ -1,14 +1,45 @@
 const express = require('express')
 const path = require('path')
+const handlebars = require('express-handlebars')
 
 const app = express()
+
+const cats = [
+    {
+        name: 'Navcho',
+        age: 8,
+        breed: 'persian',
+    },
+
+    {
+        name: 'Sisa',
+        age: 18,
+        breed: 'belgiam',
+    },
+    {
+        name: 'lqliu',
+        age: 40,
+        breed: 'ciganin',
+    }]
+
+
+app.engine('hbs', handlebars.engine({
+    extname: 'hbs'
+}))
+app.set('view engine', 'hbs')
+
+app.use(express.static('public'))
+
+// app.get('/styles/site.css', (req, res) => {
+//     res.sendFile(path.join(__dirname,'styles','site.css'))
+// })
 
 app.use((req, res, next) => {
     console.log('Request ULR:' + req.url);
 
-    if (Math.random() < 0.5) {
-        return res.send('You don`t have luck :)');
-    }
+    // if (Math.random() < 0.5) {
+    //     return res.send('You don`t have luck :)');
+    // }
 
     next()
 })
@@ -18,20 +49,15 @@ app.use((req, res, next) => {
 //     // res.send('New cat created')
 //
 
-app.get('/style/site.css', (req, res) => {
-    res.sendFile('/style/site.css')
-})
+
 
 app.get('/', (req, res) => {
-    res.header({
-        'content-type': 'text/plain'
-    });
-
-    res.status(200).send('<h1>hello world</h1>')
+    res.render('home', { name: 'Iv4o' })
 });
 
 app.get('/cats', (req, res) => {
-    res.send('cats page')
+    // res.send('cats page')
+    res.render('cats', { cats:cats })
 })
 
 app.get('/cats/download', (req, res) => {
